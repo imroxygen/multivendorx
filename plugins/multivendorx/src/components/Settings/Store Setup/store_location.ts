@@ -108,23 +108,22 @@ export default {
             ],
         },
         {
-            key: 'radius_search_min_distance',
-            type: 'number',
-            label: __( 'Radius Search - Minimum Distance', 'multivendorx' ),
-            desc: __( 'Set the minimum allowable distance (in selected unit) for radius-based search filters.', 'multivendorx' ),
-        },
-        {
-            key: 'radius_search_max_distance',
-            type: 'number',
-            label: __( 'Radius Search - Maximum Distance', 'multivendorx' ),
-            desc: __( 'Set the maximum allowable distance (in selected unit) for radius-based search filters.', 'multivendorx' ),
-        },
-        {
-            key: 'map_zoom_level',
-            type: 'number',
-            label: __( 'Map Zoom Level', 'multivendorx' ),
-            desc: __( 'Define the default zoom level of the map shown on the store or store page. Higher values zoom in closer.', 'multivendorx' ),
-        }
-                        
+            key: 'radius_search_distance',
+            type: 'multi-number',
+            label: __( 'Radius Search Distance', 'multivendorx' ),
+            options: [
+                {
+                    key: 'radius_search_min_distance',
+                    label: __( 'min', 'multivendorx' ),
+                    type: 'number',
+                },
+                {
+                    key: 'radius_search_max_distance',
+                    label: __( 'max', 'multivendorx' ),
+                    type: 'number',
+                },                
+            ],
+            
+        },              
     ],
 };

@@ -74,7 +74,14 @@ export default {
             ],
             look: 'toggle',
         },
-
+        {
+            key: 'section',
+            type: 'section',
+            hint: __(
+                'Store Customization',
+                'multivendorx'
+            ),
+        },
         {
             key: 'store_color_settings',
             type: 'color-setting',

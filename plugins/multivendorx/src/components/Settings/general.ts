@@ -20,14 +20,6 @@ export default {
     submitUrl: 'settings',
     modal: [     
         {
-            key: 'section',
-            type: 'section',
-            hint: __(
-                'Core Pages & API Links',
-                'multivendorx'
-            ),
-        },
-        {
             key: 'store_registration_page',
             type: 'select',
             label: __( 'Store Registration Page', 'multivendorx' ),
@@ -62,6 +54,14 @@ export default {
             label: __( 'TinyMCE Api', 'multivendorx' ),
             desc: __(
                 'Set TinyMCE Api key <a href="https://www.tiny.cloud/blog/how-to-get-tinymce-cloud-up-in-less-than-5-minutes/" target="_blank">Click here to generate key</a> to enable the text editor for vendors. This allows them to format their product descriptions and other content with ease.',
+                'multivendorx'
+            ),
+        },
+        {
+            key: 'section',
+            type: 'section',
+            hint: __(
+                'Shortcode library',
                 'multivendorx'
             ),
         },
