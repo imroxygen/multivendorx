@@ -1514,6 +1514,7 @@ const AdminForm: React.FC<AdminFormProps> = ({
                             wrapperClass="divider-section"
                             value={inputField.label}
                             hint={inputField.hint}
+                            description={inputField.desc}
                         />
                     );
                     break;

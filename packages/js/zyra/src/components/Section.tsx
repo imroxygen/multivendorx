@@ -8,9 +8,10 @@ interface SectionProps {
     wrapperClass: string;
     hint?: string;
     value?: string;
+    description?: string;
 }
 
-const Section: React.FC< SectionProps > = ( { wrapperClass, hint, value } ) => {
+const Section: React.FC< SectionProps > = ( { wrapperClass, hint, value, description } ) => {
     return (
         <>
             <div className={ wrapperClass }>
@@ -21,7 +22,7 @@ const Section: React.FC< SectionProps > = ( { wrapperClass, hint, value } ) => {
                         dangerouslySetInnerHTML={ { __html: hint } }
                     ></p>
                 ) }
-                <div className="desc">Lorem ipsum dolor sit amet.</div>
+                <div className="desc">{description}</div>
             </div>
         </>
     );
