@@ -50,6 +50,8 @@
     font-weight: 500;
     margin-bottom: 0.875rem;
     color: $text-color;
+    display: flex;
+    align-items: center;
 
     i{
       margin-right: 0.5rem;
