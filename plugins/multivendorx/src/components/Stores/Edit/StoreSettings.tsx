@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
 	getApiLink,
-	
 	useModules,
 	EmailsInput,
 	GoogleMap,
@@ -34,12 +33,12 @@ const StoreSettings = ({
 	onUpdate: any;
 }) => {
 	const [formData, setFormData] = useState<FormData>({});
-const statusOptions = [
-	{ label: __('Under Review', 'multivendorx'), value: 'under_review' },
-	{ label: __('Suspended', 'multivendorx'), value: 'suspended' },
-	{ label: __('Active', 'multivendorx'), value: 'active' },
-	{ label: __('Permanently Deactivated', 'multivendorx'), value: 'deactivated' }
-];
+	const statusOptions = [
+		{ label: __('Under Review', 'multivendorx'), value: 'under_review' },
+		{ label: __('Suspended', 'multivendorx'), value: 'suspended' },
+		{ label: __('Active', 'multivendorx'), value: 'active' },
+		{ label: __('Permanently Deactivated', 'multivendorx'), value: 'deactivated' }
+	];
 
 	const [stateOptions, setStateOptions] = useState<
 		{ label: string; value: string }[]
@@ -294,7 +293,7 @@ const statusOptions = [
 		}
 	};
 
-	const handleChange = (name: string, value: any) => {
+	const handleChange = (name, value) => {
 		const updated = { ...formData, [name]: value };
 		setFormData(updated);
 
@@ -609,7 +608,7 @@ const statusOptions = [
 								<BasicInputUI
 									name="slug"
 									value={formData.slug}
-									onChange={handleChange}
+									onChange={(val) => handleChange('slug', val)}
 								/>
 								<div className="settings-metabox-description slug">
 									{__('Store URL', 'multivendorx')} :{' '}
@@ -653,9 +652,9 @@ const statusOptions = [
 											{network === 'twitter'
 												? 'X'
 												: network
-														.charAt(0)
-														.toUpperCase() +
-													network.slice(1)}
+													.charAt(0)
+													.toUpperCase() +
+												network.slice(1)}
 										</label>
 										<BasicInputUI
 											name={network}
@@ -663,7 +662,7 @@ const statusOptions = [
 												formData[network]?.trim() ||
 												defaultUrl
 											}
-											onChange={handleChange}
+											onChange={(val) => handleChange(network, val)}
 										/>
 									</div>
 								</FormGroupWrapper>
