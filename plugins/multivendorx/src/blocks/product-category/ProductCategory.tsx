@@ -38,8 +38,8 @@ const ProductCategory: React.FC<{}> = () => {
 	}, []);
 
 	return (
-		<div className="store-card">
-			<h3>{__('Product Categories', 'multivendorx')}</h3>
+		<div className="store-card ">
+			<h2>{__('Product Categories', 'multivendorx')}</h2>
 			<ul className="wc-block-product-categories-list">
 				{categories.map((category) => (
 					<li

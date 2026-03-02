@@ -84,7 +84,7 @@ const ProductList: React.FC<ProductListProps> = ({
 				<p>{__('Loading products...', 'multivendorx')}</p>
 			) : (
 				<div className="woocommerce">
-					<h3>{__('Product By Rating', 'multivendorx')}</h3>
+					<h2>{__('Product By Rating', 'multivendorx')}</h2>
 
 					<ul className="product_list_widget">
 						{products.length > 0 ? (
