@@ -64,7 +64,13 @@ foreach ($store_tabs as $key => $tab) {
 
 		case 'products':
 		default:
+			$search_keyword = filter_input(
+				INPUT_GET,
+				'store_search',
+				FILTER_SANITIZE_SPECIAL_CHARS
+			);
 
+			$search_keyword = $search_keyword ? trim($search_keyword) : '';
 			$paged = get_query_var('paged') ? get_query_var('paged') : 1;
 
 			$args = array(
@@ -75,10 +81,29 @@ foreach ($store_tabs as $key => $tab) {
 				'post_status'    => 'publish',
 			);
 
+			if (! empty($search_keyword)) {
+				$args['s'] = $search_keyword;
+			}
+
 			$products = new WP_Query($args);
 	?>
 
 			<div class="woocommerce">
+				<form method="get" class="store-product-search" style="margin-bottom:20px;">
+					<input
+						type="search"
+						name="store_search"
+						placeholder="<?php esc_attr_e('Search products...', 'multivendorx'); ?>"
+						value="<?php echo esc_attr($search_keyword); ?>"
+						autocomplete="off" />
+
+					<?php
+					// Preserve pagination if needed
+					if ($paged > 1) :
+					?>
+						<input type="hidden" name="paged" value="<?php echo esc_attr($paged); ?>">
+					<?php endif; ?>
+				</form>
 				<?php if ($products->have_posts()) : ?>
 
 					<?php woocommerce_product_loop_start(); ?>
