@@ -607,7 +607,7 @@ class FrontendScripts {
                     'use_settings'    => true,
                     'use_rest'    => true,
                     'data'         => apply_filters(
-                        'multivendorx_store_localize_scripts',
+                        'multivendorx_store_frontend_localize_scripts',
                         array(
                             'storeDetails'  => StoreUtil::get_specific_store_info(),
                             'activeModules' => MultiVendorX()->modules->get_active_modules(),

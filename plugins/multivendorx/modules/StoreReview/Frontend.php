@@ -35,7 +35,7 @@ class Frontend {
         add_filter( 'multivendorx_localize_scripts', array( $this, 'localize_scripts' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
         add_action( 'woocommerce_order_item_meta_end', array( $this, 'multivendorx_add_store_review_button' ), 10, 3 );
-        add_filter( 'multivendorx_store_localize_scripts', array( $this, 'multivendorx_store_localize_scripts' ) );
+        add_filter( 'multivendorx_store_frontend_localize_scripts', array( $this, 'multivendorx_store_frontend_localize_scripts' ) );
     }
 
     public function register_script( $scripts ) {
@@ -164,7 +164,7 @@ class Frontend {
         echo '</div>';
     }
 
-    public function multivendorx_store_localize_scripts( $item ) {
+    public function multivendorx_store_frontend_localize_scripts( $item ) {
         $store_id      = isset( $item['storeDetails']['storeId'] )
             ? absint( $item['storeDetails']['storeId'] )
             : 0;
