@@ -62,7 +62,7 @@ const StoreReview: React.FC<StoreReviewProps> = ({
 				headers: { 'X-WP-Nonce': StoreInfo.nonce },
 				params: {
 					store_id: StoreInfo.storeDetails.storeId,
-					overview: true, // 🔥 this triggers your PHP condition
+					overview: true,
 				},
 			})
 			.then((response) => {
