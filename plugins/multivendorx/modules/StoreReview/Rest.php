@@ -51,6 +51,11 @@ class Rest extends \WP_REST_Controller {
                     'callback'            => array( $this, 'get_items' ),
                     'permission_callback' => array( $this, 'get_items_permissions_check' ),
                 ),
+                array(
+                    'methods'             => \WP_REST_Server::CREATABLE,
+                    'callback'            => array( $this, 'create_item' ),
+                    'permission_callback' => array( $this, 'create_item_permissions_check' ),
+                ),
             )
         );
 
@@ -93,6 +98,9 @@ class Rest extends \WP_REST_Controller {
         return current_user_can( 'read' ) || current_user_can( 'edit_stores' );
     }
 
+    public function create_item_permissions_check( $request ) {
+        return current_user_can( 'read' ) || current_user_can( 'edit_stores' );
+    }
 
     /**
      * PUT permission.
@@ -281,6 +289,111 @@ class Rest extends \WP_REST_Controller {
             MultiVendorX()->util->log( $e );
 
             return new \WP_Error( 'server_error', __( 'Unexpected server error', 'multivendorx' ), array( 'status' => 500 ) );
+        }
+    }
+
+    public function create_item( $request ) {
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+        if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return new \WP_Error(
+                'invalid_nonce',
+                __( 'Invalid nonce', 'multivendorx' ),
+                array( 'status' => 403 )
+            );
+        }
+
+        try {
+            $user_id = get_current_user_id();
+
+            $store_id       = absint( $request->get_param( 'store_id' ) );
+            $review_title   = sanitize_text_field( $request->get_param( 'review_title' ) );
+            $review_content = sanitize_textarea_field( $request->get_param( 'review_content' ) );
+            $ratings        = (array) $request->get_param( 'rating' );
+
+            if ( ! $store_id || empty( $ratings ) ) {
+                return new \WP_Error(
+                    'missing_fields',
+                    __( 'Missing required fields.', 'multivendorx' ),
+                    array( 'status' => 400 )
+                );
+            }
+
+            if ( Util::has_reviewed( $store_id, $user_id ) ) {
+                return new \WP_Error(
+                    'already_reviewed',
+                    __( 'You have already reviewed this store.', 'multivendorx' ),
+                    array( 'status' => 400 )
+                );
+            }
+
+            $order_id = Util::is_verified_buyer( $store_id, $user_id );
+
+            $overall = array_sum( array_map( 'intval', $ratings ) ) / count( $ratings );
+
+            $uploaded_images = array();
+            if ( ! empty( $_FILES['review_images']['name'][0] ) ) {
+                require_once ABSPATH . 'wp-admin/includes/file.php';
+                $files = $_FILES['review_images'];
+
+                foreach ( $files['name'] as $key => $value ) {
+                    if ( $files['name'][ $key ] ) {
+                        $file = array(
+                            'name'     => $files['name'][ $key ],
+                            'type'     => $files['type'][ $key ],
+                            'tmp_name' => $files['tmp_name'][ $key ],
+                            'error'    => $files['error'][ $key ],
+                            'size'     => $files['size'][ $key ],
+                        );
+
+                        $upload = wp_handle_upload( $file, array( 'test_form' => false ) );
+
+                        if ( ! isset( $upload['error'] ) && isset( $upload['url'] ) ) {
+                            $uploaded_images[] = esc_url_raw( $upload['url'] );
+                        }
+                    }
+                }
+            }
+
+            $review_id = Util::insert_review(
+                $store_id,
+                $user_id,
+                $review_title,
+                $review_content,
+                $overall,
+                $order_id,
+                $uploaded_images
+            );
+
+            Util::insert_ratings( $review_id, $ratings );
+
+            $review = reset(
+                Util::get_review_information( array( 'review_id' => $review_id ) )
+            );
+
+            if ( ! $review ) {
+                return new \WP_Error(
+                    'creation_failed',
+                    __( 'Review could not be created.', 'multivendorx' ),
+                    array( 'status' => 500 )
+                );
+            }
+
+            $response = rest_ensure_response(
+                $this->prepare_rest_item_for_response( $review )
+            );
+
+            $response->set_status( 201 );
+
+            return $response;
+
+        } catch ( \Exception $e ) {
+            MultiVendorX()->util->log( $e );
+
+            return new \WP_Error(
+                'server_error',
+                __( 'Unexpected server error', 'multivendorx' ),
+                array( 'status' => 500 )
+            );
         }
     }
 
