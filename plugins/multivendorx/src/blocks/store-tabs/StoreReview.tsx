@@ -36,6 +36,7 @@ const StoreReview: React.FC<StoreReviewProps> = ({
 	const [ratings, setRatings] = useState<{ [key: string]: number }>({});
 	const [images, setImages] = useState<File[]>([]);
 	const [submitting, setSubmitting] = useState(false);
+	const [overview, setOverview] = useState<any>(null);
 
 	useEffect(() => {
 		setLoading(true);
@@ -55,6 +56,22 @@ const StoreReview: React.FC<StoreReviewProps> = ({
 			})
 			.finally(() => setLoading(false));
 	}, [reviewsToShow, sortOrder]);
+	useEffect(() => {
+		axios
+			.get(getApiLink(StoreInfo, 'review'), {
+				headers: { 'X-WP-Nonce': StoreInfo.nonce },
+				params: {
+					store_id: StoreInfo.storeDetails.storeId,
+					overview: true, // 🔥 this triggers your PHP condition
+				},
+			})
+			.then((response) => {
+				setOverview(response.data);
+			})
+			.catch((error) => {
+				console.error('Overview fetch error:', error);
+			});
+	}, []);
 
 	const renderStars = (rating: number) => {
 		return Array.from({ length: 5 }).map((_, i) => (
@@ -83,7 +100,6 @@ const StoreReview: React.FC<StoreReviewProps> = ({
 
 		const formData = new FormData();
 
-		// ✅ match backend param names
 		formData.append('store_id', StoreInfo.storeDetails.storeId);
 		formData.append('review_title', reviewTitle);
 		formData.append('review_content', reviewContent);
@@ -98,7 +114,7 @@ const StoreReview: React.FC<StoreReviewProps> = ({
 
 		try {
 			const response = await axios.post(
-				getApiLink(StoreInfo, 'review'), // ⚠️ IMPORTANT: must match REST route
+				getApiLink(StoreInfo, 'review'),
 				formData,
 				{
 					headers: {
@@ -120,11 +136,7 @@ const StoreReview: React.FC<StoreReviewProps> = ({
 			setShowForm(false);
 
 		} catch (error: any) {
-			if (error.response?.data?.message) {
-				alert(error.response.data.message);
-			} else {
-				alert(__('Unexpected error occurred.', 'multivendorx'));
-			}
+			console.log(error)
 		} finally {
 			setSubmitting(false);
 		}
@@ -137,14 +149,33 @@ const StoreReview: React.FC<StoreReviewProps> = ({
 			setImages(Array.from(e.target.files));
 		}
 	};
-
 	return (
 		<>
+			{overview && (
+				<div className="review-overview">
+					<h3>
+						{__('Overall Rating', 'multivendorx')} : {overview.overall} ⭐
+					</h3>
+
+					<p>
+						{overview.total_reviews}{' '}
+						{__('reviews', 'multivendorx')}
+					</p>
+
+					<div className="rating-breakdown">
+						{[5, 4, 3, 2, 1].map((star) => (
+							<div key={star}>
+								{star} ⭐ : {overview.breakdown?.[star] || 0}
+							</div>
+						))}
+					</div>
+				</div>
+			)}
 			<div className="multivendorx-review-form-wrapper">
 				{StoreInfo.currentUserId === "0" ? (
 					<p>
 						{__('Please login to submit a review.', 'multivendorx')}{' '}
-						<a href={StoreInfo.loginUrl}>Login</a>
+						<a href={StoreInfo.loginUrl}>{__('Login', 'multivendorx')}</a>
 					</p>
 				) : StoreInfo.reviewStatus === 'pending' ||
 					StoreInfo.reviewStatus === 'rejected' ? (

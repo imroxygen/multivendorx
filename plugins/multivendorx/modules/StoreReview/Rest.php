@@ -131,6 +131,9 @@ class Rest extends \WP_REST_Controller {
         }
         try {
             $store_id       = $request->get_param( 'store_id' );
+            if( $request->get_param( 'overview' ) ){
+                return rest_ensure_response( $this->calculate_store_rating_summary( intval( $store_id ) ) );
+            }
             $limit          = intval( $request->get_param( 'row' ) ) ?: 0;
             $page           = intval( $request->get_param( 'page' ) ) ?: 1;
             $offset         = ( $page - 1 ) * $limit;
@@ -579,6 +582,52 @@ class Rest extends \WP_REST_Controller {
             'reply_date_gmt'     => Utill::multivendorx_rest_prepare_date_response( $review['reply_date'], true ) ?? '',
             'date_created_gmt'   => Utill::multivendorx_rest_prepare_date_response( $review['date_created'], true ),
             'date_modified_gmt'  => Utill::multivendorx_rest_prepare_date_response( $review['date_modified'], true ),
+        );
+    }
+
+    private function calculate_store_rating_summary( $store_id ) {
+
+        if ( ! $store_id ) {
+            return array();
+        }
+
+        $parameters = MultiVendorX()->setting->get_setting(
+            'ratings_parameters',
+            array()
+        );
+
+        $averages = Util::get_avg_ratings( $store_id, $parameters );
+        $overall  = Util::get_overall_rating( $store_id );
+
+        $reviews       = Util::get_reviews_by_store( $store_id );
+        $total_reviews = count( $reviews );
+
+        $breakdown = array(
+            5 => 0,
+            4 => 0,
+            3 => 0,
+            2 => 0,
+            1 => 0,
+        );
+
+        foreach ( $reviews as $review ) {
+
+            $rating = (int) round( floatval( $review->overall_rating ) );
+
+            if ( $rating < 1 ) {
+                $rating = 1;
+            } elseif ( $rating > 5 ) {
+                $rating = 5;
+            }
+
+            $breakdown[ $rating ]++;
+        }
+
+        return array(
+            'averages'      => $averages,
+            'overall'       => (float) round( $overall, 1 ),
+            'total_reviews' => (int) $total_reviews,
+            'breakdown'     => $breakdown,
         );
     }
 }

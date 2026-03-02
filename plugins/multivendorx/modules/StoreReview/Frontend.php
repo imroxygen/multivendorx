@@ -165,8 +165,8 @@ class Frontend {
     }
 
     public function multivendorx_store_localize_scripts( $item ) {
-        $store_id      = isset( $item['storeDetails']['id'] )
-            ? absint( $item['storeDetails']['id'] )
+        $store_id      = isset( $item['storeDetails']['storeId'] )
+            ? absint( $item['storeDetails']['storeId'] )
             : 0;
 
         $user_id       = ! empty( $item['currentUserId'] )
@@ -190,14 +190,12 @@ class Frontend {
 
         $item['reviewStatus']     = '';
         $item['isVerifiedBuyer']  = false;
-
         if ( $is_logged_in && $store_id ) {
 
             // Get review status
-            $item['reviewStatus'] =Util::get_user_review_status( $store_id,
+            $item['reviewStatus'] = Util::get_user_review_status( $store_id,
                     $user_id
                 );
-
             // If verified-only enabled → check verified buyer
             if ( $is_verified_buyer_only ) {
 
