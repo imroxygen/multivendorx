@@ -337,7 +337,7 @@ export default {
                 'notifima'
             ),
             desc: __(
-                'Generate an API key from your Mailchimp account and paste it here to enable audience synchronization.',
+                'Generate an API key from your Mailchimp account and paste it here to enable audience synchronization. <a href="https://admin.mailchimp.com/account/api/" target="_blank" rel="noopener noreferrer">Get your API key</a>.',
                 'notifima'
             ),
             dependent: {
