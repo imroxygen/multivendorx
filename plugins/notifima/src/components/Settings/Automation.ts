@@ -35,7 +35,7 @@ export default {
         },
         {
             key: 'is_enable_backorders',
-            type: 'choice-toggle',
+            type: 'checkbox',
             label: __('Show subscription form for', 'notifima'),
             settingDescription: __(
                 'Choose when the restock subscription form should be displayed.',
@@ -48,16 +48,17 @@ export default {
 
             options: [
                 {
-                    key: 'out_of_stock',
-                    label: __('Out of stock products', 'notifima'),
-                    value: 'out_of_stock',
+                    key: 'outofstock',
+                    value: 'outofstock',
+                    label: __('Out of stock', 'notifima'),
                 },
                 {
-                    key: 'out_of_stock_and_backorder',
-                    label: __('Out of stock & backorder products', 'notifima'),
-                    value: 'out_of_stock_and_backorder',
-                },
+                    key: 'onbackorder',
+                    value: 'onbackorder',
+                    label: __('On backorder', 'notifima'),
+                }
             ],
+            selectDeselect: true,
         },
         {
             key: 'section',
