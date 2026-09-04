@@ -42,7 +42,7 @@ export default {
                 'notifima'
             ),
             desc: __(
-                '<ul><li>Out of stock products - Display the subscription form only for products that are out of stock.</li><li>Out of stock &amp; backorder products - Display the subscription form for products that are out of stock or available on backorder.</li></ul>',
+                '<ul><li>Out of stock - Display the subscription form when a product is out of stock.</li><li>On backorder - Display the subscription form when a product is available on backorder.</li></ul>',
                 'notifima'
             ),
 
