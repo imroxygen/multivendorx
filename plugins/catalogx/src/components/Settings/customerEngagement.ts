@@ -1,4 +1,6 @@
 import { __, sprintf } from '@wordpress/i18n';
+import { CountryCodes } from '@zyra/core';
+
 export default {
     id: 'customer-engagement',
     priority: 4,
@@ -239,6 +241,71 @@ export default {
             ),
             label: __('Recipient email for product enquiries', 'catalogx'),
             moduleEnabled: 'enquiry',
+        },
+        //whatsapp section
+        {
+            key: 'enable_whatsapp',
+            type: 'checkbox',
+            label: __('Enable WhatsApp', 'catalogx'),
+            desc: __(
+                'Allow customers to contact you directly through WhatsApp for product enquiries.',
+                'catalogx'
+            ),
+            options: [
+                {
+                    key: 'enable_whatsapp',
+                    label: __('', 'catalogx'),
+                    value: 'enable_whatsapp',
+                },
+            ],
+            look: 'toggle',
+            moduleEnabled: 'enquiry',
+            proSetting: true,
+
+        },
+        {
+            key: 'whatsapp_number',
+            type: 'text',
+            size: 12,
+            label: __('WhatsApp number', 'catalogx'),
+            placeholder: __('9000012345', 'catalogx'),
+            settingDescription: __(
+                'The WhatsApp number that will receive product enquiries. Use country code followed by phone number.',
+                'catalogx'
+            ),
+            beforeElement: {
+                type: 'select',
+                key: 'whatsapp_country_code',
+                size: 12,
+                options: CountryCodes,
+            },
+            dependent: {
+                key: 'enable_whatsapp',
+                set: true,
+                value: 'enable_whatsapp',
+            },
+            moduleEnabled: 'enquiry',
+            proSetting: true,
+        },
+        {
+            key: 'whatsapp_message_template',
+            type: 'textarea',
+            label: __('WhatsApp message template', 'catalogx'),
+            settingDescription: __(
+                'Define the message that will be pre-filled when customers send a product enquiry through WhatsApp.',
+                'catalogx'
+            ),
+            desc: __(
+                'Hello, I am interested in this product from {site_name}.\n\nProduct: {product_name}\nProduct URL: {product_url}\n\nPlease share more details, pricing, availability, and other relevant information.\n\nThank you.',
+                'catalogx'
+            ),
+            moduleEnabled: 'enquiry',
+            proSetting: true,
+            dependent: {
+                key: 'enable_whatsapp',
+                set: true,
+                value: 'enable_whatsapp',
+            },
         },
         //quote
         {
