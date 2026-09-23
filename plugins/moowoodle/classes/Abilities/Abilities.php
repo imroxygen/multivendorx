@@ -8,6 +8,7 @@
 namespace MooWoodle\Abilities;
 
 use MooWoodle\Abilities\AbilitiesApi\Courses;
+use MooWoodle\Abilities\AbilitiesApi\Synchronization;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -43,7 +44,8 @@ class Abilities {
     public function init_classes() {
 
         $this->container = array(
-            'courses' => new Courses(),
+            'courses'           => new Courses(),
+            'synchronization'   => new Synchronization(),
         );
     }
 
