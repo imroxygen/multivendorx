@@ -18,6 +18,7 @@ import {
 import { TableCard } from '@zyra/table';
 
 import ShowProPopup from '../Popup/Popup';
+import { formatDate } from '../../services/commonFunction';
 
 export interface WholesaleUserRow {
 	id?: number;
@@ -39,11 +40,23 @@ const WholesaleUser = () => {
 				<InformationItemComponent
 					title={row.customer}
 					titleLink={row.customer_url}
+					badges={[
+						{
+							text: row.status,
+							className: `badge-${row.status?.toLowerCase()}`,
+						}
+					]}
 					descriptions={[
 						{
 							label: __('Email', 'catalogx'),
+							icon: 'mail',
 							value: row.email || '—',
 						},
+						{
+							icon: 'calendar',
+							label: __('Date', 'catalogx'),
+							value: formatDate(row.date),
+						},						
 					]}
 					avatar={{
 						image: row.customer_img_url,
@@ -51,15 +64,6 @@ const WholesaleUser = () => {
 					}}
 				/>
 			),
-		},
-		status: {
-			label: __('Status', 'catalogx'),
-			type: 'status',
-			statusClass: (row: WholesaleUserRow) => `${row.status}`
-		},
-		date: {
-			label: __('Date', 'catalogx'),
-			type: 'date'
 		},
 		action: {
 			type: 'action',
@@ -92,6 +96,7 @@ const WholesaleUser = () => {
 	];
 	const defaultTableProps = {
 		headers,
+		hideHeader: true,
 		format: appLocalizer.date_format,
 		filters,
 		search: {
@@ -113,7 +118,7 @@ const WholesaleUser = () => {
 		if (!appLocalizer.khali_dabba) {
 			return (
 				<div className="demo-wrapper" onClick={() => setopenPopup(true)}>
-					<div className="watermark">{__('This is sample Data','catalogx' )}</div>
+					<div className="watermark">{__('This is sample Data', 'catalogx')}</div>
 					<TableCard {...tableProps} />
 				</div>
 			);
