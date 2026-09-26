@@ -33,9 +33,9 @@ class Abilities {
 
         $this->init_classes();
 
-        add_action('wp_abilities_api_categories_init',array( $this, 'register_categories' ) );
+        add_action( 'wp_abilities_api_categories_init', array( $this, 'register_categories' ) );
 
-        add_action('wp_abilities_api_init',array( $this, 'register_abilities' ) );
+        add_action( 'wp_abilities_api_init', array( $this, 'register_abilities' ) );
     }
 
     /**
@@ -44,8 +44,8 @@ class Abilities {
     public function init_classes() {
 
         $this->container = array(
-            'courses'           => new Courses(),
-            'synchronization'   => new Synchronization(),
+            'courses'         => new Courses(),
+            'synchronization' => new Synchronization(),
         );
     }
 
@@ -72,7 +72,6 @@ class Abilities {
     public function register_abilities() {
 
         foreach ( $this->container as $controller ) {
-
             if ( method_exists( $controller, 'register_abilities' ) ) {
                 $controller->register_abilities();
             }

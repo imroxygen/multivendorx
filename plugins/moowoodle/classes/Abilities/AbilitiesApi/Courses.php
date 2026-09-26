@@ -24,19 +24,19 @@ class Courses {
 		wp_register_ability(
 			'moowoodle/get-courses',
 			array(
-				'label'       => __( 'Get Courses', 'moowoodle' ),
-				'description' => __( 'Retrieve Moodle courses managed by MooWoodle, with optional search and category filters.', 'moowoodle' ),
-				'category'    => 'moowoodle',
+				'label'               => __( 'Get Courses', 'moowoodle' ),
+				'description'         => __( 'Retrieve Moodle courses managed by MooWoodle, with optional search and category filters.', 'moowoodle' ),
+				'category'            => 'moowoodle',
 
-				'input_schema' => array(
+				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'search' => array(
+						'search'      => array(
 							'type'        => 'string',
 							'description' => __( 'Search by course name or short name.', 'moowoodle' ),
 						),
 
-						'search_by' => array(
+						'search_by'   => array(
 							'type'        => 'string',
 							'description' => __( 'Field to search.', 'moowoodle' ),
 							'enum'        => array(
@@ -50,12 +50,12 @@ class Courses {
 							'description' => __( 'Filter courses by Moodle category ID.', 'moowoodle' ),
 						),
 
-						'product_id' => array(
+						'product_id'  => array(
 							'type'        => 'integer',
 							'description' => __( 'Get the course linked to a WooCommerce product ID.', 'moowoodle' ),
 						),
 
-						'limit' => array(
+						'limit'       => array(
 							'type'        => 'integer',
 							'description' => __( 'Maximum number of courses to return.', 'moowoodle' ),
 							'default'     => 50,
@@ -63,12 +63,12 @@ class Courses {
 					),
 				),
 
-				'output_schema' => array(
-					'type'       => 'array',
-					'items'      => array(
+				'output_schema'       => array(
+					'type'  => 'array',
+					'items' => array(
 						'type'       => 'object',
 						'properties' => array(
-							'id' => array(
+							'id'               => array(
 								'type' => 'integer',
 							),
 
@@ -76,46 +76,46 @@ class Courses {
 								'type' => 'integer',
 							),
 
-							'shortname' => array(
+							'shortname'        => array(
 								'type' => 'string',
 							),
 
-							'name' => array(
+							'name'             => array(
 								'type' => 'string',
 							),
 
-							'category_id' => array(
+							'category_id'      => array(
 								'type' => 'integer',
 							),
 
-							'category_name' => array(
+							'category_name'    => array(
 								'type' => 'string',
 							),
 
-							'product_id' => array(
+							'product_id'       => array(
 								'type' => 'integer',
 							),
 
-							'product_name' => array(
+							'product_name'     => array(
 								'type' => 'string',
 							),
 
-							'start_date' => array(
+							'start_date'       => array(
 								'type' => 'string',
 							),
 
-							'end_date' => array(
+							'end_date'         => array(
 								'type' => 'string',
 							),
 
-							'enrolled_users' => array(
+							'enrolled_users'   => array(
 								'type' => 'integer',
 							),
 						),
 					),
 				),
 
-				'execute_callback' => array(
+				'execute_callback'    => array(
 					$this,
 					'get_courses',
 				),
@@ -125,7 +125,7 @@ class Courses {
 					'get_courses_permissions_check',
 				),
 
-				'meta' => array(
+				'meta'                => array(
 					'mcp' => array(
 						'public' => true,
 					),
@@ -167,7 +167,6 @@ class Courses {
 		}
 
 		if ( ! empty( $input['search'] ) ) {
-
 			$search = sanitize_text_field( $input['search'] );
 
 			if ( 'shortname' === ( $input['search_by'] ?? '' ) ) {
@@ -181,7 +180,6 @@ class Courses {
 		 * Find course linked to a WooCommerce product.
 		 */
 		if ( ! empty( $input['product_id'] ) ) {
-
 			$course_id = (int) get_post_meta(
 				absint( $input['product_id'] ),
 				Util::MOOWOODLE_PRODUCT_META['wordpress_course_id'],
@@ -204,11 +202,9 @@ class Courses {
 		$results = array();
 
 		foreach ( $courses as $course ) {
-
 			$product_name = '';
 
 			if ( ! empty( $course['product_id'] ) ) {
-
 				$product = wc_get_product(
 					(int) $course['product_id']
 				);
