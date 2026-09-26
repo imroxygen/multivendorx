@@ -64,52 +64,68 @@ class Courses {
 				),
 
 				'output_schema'       => array(
-					'type'  => 'array',
-					'items' => array(
-						'type'       => 'object',
-						'properties' => array(
-							'id'               => array(
-								'type' => 'integer',
-							),
+					'type'       => 'object',
+					'properties' => array(
 
-							'moodle_course_id' => array(
-								'type' => 'integer',
-							),
+						'total' => array(
+							'type'        => 'integer',
+							'description' => __( 'Total number of courses matching the filters.', 'moowoodle' ),
+						),
 
-							'shortname'        => array(
-								'type' => 'string',
-							),
+						'items' => array(
+							'type'  => 'array',
+							'items' => array(
+								'type'       => 'object',
+								'properties' => array(
 
-							'name'             => array(
-								'type' => 'string',
-							),
+									'id'                => array(
+										'type' => 'integer',
+									),
 
-							'category_id'      => array(
-								'type' => 'integer',
-							),
+									'moodle_url'        => array(
+										'type' => 'string',
+									),
 
-							'category_name'    => array(
-								'type' => 'string',
-							),
+									'moodle_course_id'  => array(
+										'type' => 'integer',
+									),
 
-							'product_id'       => array(
-								'type' => 'integer',
-							),
+									'course_short_name' => array(
+										'type' => 'string',
+									),
 
-							'product_name'     => array(
-								'type' => 'string',
-							),
+									'course_name'       => array(
+										'type' => 'string',
+									),
 
-							'start_date'       => array(
-								'type' => 'string',
-							),
+									'product_name'      => array(
+										'type' => 'string',
+									),
 
-							'end_date'         => array(
-								'type' => 'string',
-							),
+									'product_url'       => array(
+										'type' => 'string',
+									),
 
-							'enrolled_users'   => array(
-								'type' => 'integer',
+									'product_image'     => array(
+										'type' => 'string',
+									),
+
+									'category_name'     => array(
+										'type' => 'string',
+									),
+
+									'enrolled_user'     => array(
+										'type' => 'integer',
+									),
+
+									'view_users_url'    => array(
+										'type' => 'string',
+									),
+
+									'date'              => array(
+										'type' => 'string',
+									),
+								),
 							),
 						),
 					),
@@ -154,98 +170,22 @@ class Courses {
 	 */
 	public function get_courses( $input ) {
 
-		$limit = ! empty( $input['limit'] )
-			? min( absint( $input['limit'] ), 100 )
-			: 50;
-
-		$filters = array(
-			'limit' => $limit,
+		$args = array(
+			'limit'        => min( absint( $input['limit'] ?? 50 ), 100 ),
+			'category'     => absint( $input['category_id'] ?? 0 ),
+			'searchaction' => $input['search_by'] ?? '',
+			'search'       => sanitize_text_field( $input['search'] ?? '' ),
 		);
 
-		if ( ! empty( $input['category_id'] ) ) {
-			$filters['category_id'] = absint( $input['category_id'] );
-		}
-
-		if ( ! empty( $input['search'] ) ) {
-			$search = sanitize_text_field( $input['search'] );
-
-			if ( 'shortname' === ( $input['search_by'] ?? '' ) ) {
-				$filters['shortname'] = $search;
-			} else {
-				$filters['fullname'] = $search;
-			}
-		}
-
-		/**
-		 * Find course linked to a WooCommerce product.
-		 */
 		if ( ! empty( $input['product_id'] ) ) {
-			$course_id = (int) get_post_meta(
-				absint( $input['product_id'] ),
-				Util::MOOWOODLE_PRODUCT_META['wordpress_course_id'],
-				true
-			);
-
-			if ( ! $course_id ) {
-				return array();
-			}
-
-			$filters['id'] = $course_id;
+			$args['product_id'] = absint( $input['product_id'] );
 		}
 
-		$courses = MooWoodle()->course->get_courses( $filters );
+		$records = MooWoodle()->rest->get_service( 'courses' )->get_courses_records( $args );
 
-		if ( empty( $courses ) ) {
-			return array();
-		}
-
-		$results = array();
-
-		foreach ( $courses as $course ) {
-			$product_name = '';
-
-			if ( ! empty( $course['product_id'] ) ) {
-				$product = wc_get_product(
-					(int) $course['product_id']
-				);
-
-				if ( $product ) {
-					$product_name = $product->get_name();
-				}
-			}
-
-			$categories = MooWoodle()->category->get_course_categories(
-				(int) $course['category_id']
-			);
-
-			$category = reset( $categories );
-
-			$enrolled_users = MooWoodle()->enrollment->get_enrollments(
-				array(
-					'course_id' => (int) $course['id'],
-					'count'     => true,
-				)
-			);
-
-			$results[] = array(
-				'id'               => (int) $course['id'],
-				'moodle_course_id' => (int) $course['moodle_course_id'],
-				'shortname'        => $course['shortname'],
-				'name'             => $course['fullname'],
-				'category_id'      => (int) $course['category_id'],
-				'category_name'    => $category['name'] ?? '',
-				'product_id'       => (int) $course['product_id'],
-				'product_name'     => $product_name,
-				'start_date'       => ! empty( $course['startdate'] )
-					? wp_date( 'Y-m-d', $course['startdate'] )
-					: '',
-				'end_date'         => ! empty( $course['enddate'] )
-					? wp_date( 'Y-m-d', $course['enddate'] )
-					: '',
-				'enrolled_users'   => (int) $enrolled_users,
-			);
-		}
-
-		return $results;
+		return array(
+			'items' => $records['items'] ?? array(),
+			'total' => $records['total'] ?? 0,
+		);
 	}
 }

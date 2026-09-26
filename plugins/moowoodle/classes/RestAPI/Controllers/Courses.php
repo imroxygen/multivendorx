@@ -117,7 +117,6 @@ class Courses extends \WP_REST_Controller {
             $response->header( 'X-WP-Total', $records['total'] );
 
             return $response;
-
         } catch ( \Exception $e ) {
             return Util::server_error( $e );
         }
