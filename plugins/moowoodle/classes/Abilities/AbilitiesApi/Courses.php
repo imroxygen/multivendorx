@@ -107,7 +107,7 @@ class Courses {
 									),
 
 									'product_image'     => array(
-										'type' => 'string',
+										'type' => array( 'string', 'null', 'boolean' ),
 									),
 
 									'category_name'     => array(
