@@ -92,31 +92,7 @@ class Courses extends \WP_REST_Controller {
                 );
             }
 
-            // Extract pagination and filtering parameters from the request.
-            $limit         = intval( $request->get_param( 'row' ) ) ?: 10;
-            $page          = max( intval( $request->get_param( 'page' ) ), 1 );
-            $category_id   = $request->get_param( 'category' );
-            $search_action = $request->get_param( 'searchaction' );
-            $search_field  = $request->get_param( 'search' );
-
-            // Fetch formatted courses records using $this.
-            $records = $this->get_courses_records(
-                array(
-                    'limit'        => $limit,
-                    'page'         => $page,
-                    'category'     => $category_id,
-                    'searchaction' => $search_action,
-                    'search'       => $search_field,
-                )
-            );
-
-            // Create REST response with items.
-            $response = rest_ensure_response( $records['items'] );
-
-            // Set the total count header for pagination support.
-            $response->header( 'X-WP-Total', $records['total'] );
-
-            return $response;
+            return $this->get_courses_records( $request->get_params() );
         } catch ( \Exception $e ) {
             return Util::server_error( $e );
         }
@@ -241,10 +217,12 @@ class Courses extends \WP_REST_Controller {
             array( 'count' => true )
 		);
 
-		return array(
-			'items' => $formatted_courses,
-			'total' => $total_courses,
-		);
+        // Create REST response with items.
+        $response = rest_ensure_response( $formatted_courses );
+        // Set the total count header for pagination support.
+        $response->header( 'X-WP-Total', $total_courses );
+
+		return $response;
 	}
 
     /**

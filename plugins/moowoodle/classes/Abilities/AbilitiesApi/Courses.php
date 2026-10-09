@@ -170,22 +170,12 @@ class Courses {
 	 */
 	public function get_courses( $input ) {
 
-		$args = array(
-			'limit'        => min( absint( $input['limit'] ?? 50 ), 100 ),
-			'category'     => absint( $input['category_id'] ?? 0 ),
-			'searchaction' => $input['search_by'] ?? '',
-			'search'       => sanitize_text_field( $input['search'] ?? '' ),
-		);
+		$response = MooWoodle()->rest->get_service( 'courses' )->get_courses_records( $input );
 
-		if ( ! empty( $input['product_id'] ) ) {
-			$args['product_id'] = absint( $input['product_id'] );
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
 
-		$records = MooWoodle()->rest->get_service( 'courses' )->get_courses_records( $args );
-
-		return array(
-			'items' => $records['items'] ?? array(),
-			'total' => $records['total'] ?? 0,
-		);
+		return $response->get_data();
 	}
 }
