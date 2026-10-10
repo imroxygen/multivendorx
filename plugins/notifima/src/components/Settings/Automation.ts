@@ -690,5 +690,87 @@ export default {
                 value: 'yes',
             },
         },
+        {
+            key: 'section',
+            type: 'section',
+            icon: 'automation',
+            title: __('Subscriber Auto-Delete', 'notifima'),
+            desc: __(
+                'Configure automatic deletion of subscribers based on notification status and retention period.',
+                'notifima'
+            ),
+        },
+        {
+            key: 'is_auto_delete_enable',
+            type: 'choice-toggle',
+            label: __('Auto-delete subscriptions', 'notifima'),
+            settingDescription: __(
+                'Choose whether subscriptions matching the selected order statuses should be automatically deleted after a specified number of days.',
+                'notifima'
+            ),
+            options: [
+                {
+                    key: 'yes',
+                    label: __('Yes', 'notifima'),
+                    value: 'yes',
+                },
+                {
+                    key: 'no',
+                    label: __('No', 'notifima'),
+                    value: 'no',
+                },
+            ],
+        },
+        {
+            key: 'auto_delete_subscriber_statuses',
+            type: 'checkbox',
+            label: __('Subscriber Statuses', 'notifima'),
+            settingDescription: __(
+                'Select the subscriber statuses for which records should be automatically deleted.',
+                'notifima'
+            ),
+            options: [
+                {
+                    key: 'subscribed',
+                    value: 'subscribed',
+                    label: __('Subscribed', 'notifima'),
+                },
+                {
+                    key: 'unsubscribed',
+                    value: 'unsubscribed',
+                    label: __('Unsubscribed', 'notifima'),
+                },
+                {
+                    key: 'notification_sent',
+                    value: 'notification_sent',
+                    label: __('Notification Sent', 'notifima'),
+                },
+                {
+                    key: 'notification_failed',
+                    value: 'notification_failed',
+                    label: __('Notification Failed', 'notifima'),
+                },
+            ],
+            selectDeselect: true,
+            dependent: {
+                key: 'is_auto_delete_enable',
+                set: true,
+                value: 'yes',
+            },
+        },
+        {
+            key: 'auto_delete_after_days',
+            type: 'number',
+            label: __('Delete After (Days)', 'notifima'),
+            settingDescription: __(
+                'Specify how many days to wait before automatically deleting subscribers with the selected notification statuses.',
+                'notifima'
+            ),
+            dependent: {
+                key: 'is_auto_delete_enable',
+                set: true,
+                value: 'yes',
+            },
+        },
     ],
 };
