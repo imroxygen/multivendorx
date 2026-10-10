@@ -13,7 +13,7 @@ import { TableCard } from '@zyra/table';
 import ShowProPopup from '../Popup/Popup';
 import { __ } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
-import { defaultCategoryCounts, subscriptions } from './SubscribersListUtil';
+import { csvHeaders, defaultCategoryCounts, subscriptions } from './SubscribersListUtil';
 import axios from 'axios';
 
 interface HeaderColumn {
@@ -29,6 +29,7 @@ interface HeaderConfig {
 interface RowData {
     [key: string]: string | number | boolean | null | undefined;
 }
+
 export const formatLocalDate = (date?: Date) =>
     date ? date.toISOString().split('T')[0] : '';
 
@@ -41,20 +42,23 @@ export const downloadCSV = (
         return;
     }
 
-    // Only include headers with csv: true
+    // Exclude columns explicitly hidden from CSV.
     const csvColumns = Object.entries(headers)
         .filter(([_, h]) => h.csvDisplay !== false)
         .map(([key, h]) => ({ key, label: h.label }));
 
+    const escapeCSV = (value: unknown) =>
+        `"${String(value ?? '').replace(/"/g, '""')}"`;
+
     // Header row
-    const csvRows = [csvColumns.map((c) => `"${c.label}"`).join(',')];
+    const csvRows = [csvColumns.map((column) => escapeCSV(column.label)).join(',')];
 
     // Data rows
     rows.forEach((row) => {
         const rowData = csvColumns
             .map((col) => {
                 const value = row[col.key];
-                return `"${value != null ? value : ''}"`;
+                return escapeCSV(value);
             })
             .join(',');
         csvRows.push(rowData);
@@ -134,7 +138,7 @@ const SubscribersList = () => {
                 const rows = response.data || [];
 
                 downloadCSV(
-                    headers,
+                    csvHeaders,
                     rows,
                     'subscriber.csv'
                 );
