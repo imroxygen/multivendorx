@@ -627,80 +627,88 @@ class StoreUtil {
 	public static function get_store_information( $args = array() ) {
 		global $wpdb;
 
-		$table = $wpdb->prefix . Utill::TABLES['store'];
+		$where  = array();
+		$params = array();
 
-		// Each condition is a 1/0 term (flag AND test) summed in SQL; a row matches when enough terms hit:
-		// every enabled filter for AND, at least one for OR, none required when nothing is set.
-		$include_ids  = array_merge( array( 0 ), array_map( 'intval', (array) ( $args['ID'] ?? 0 ) ) );
-		$exclude_ids  = array_merge( array( 0 ), array_map( 'intval', (array) ( $args['exclude_ids'] ?? 0 ) ) );
-		$enabled      = ( isset( $args['ID'] ) ? 1 : 0 ) + ( isset( $args['exclude_ids'] ) ? 1 : 0 );
-		$term_values  = array( isset( $args['ID'] ) ? 1 : 0, isset( $args['exclude_ids'] ) ? 1 : 0 );
-		$like_filters = array( 'name', 'searchField' );
-
-		foreach ( array( 'status', 'name', 'slug', 'searchField' ) as $filter_key ) {
-			$is_set        = isset( $args[ $filter_key ] ) ? 1 : 0;
-			$enabled      += $is_set;
-			$term_values[] = $is_set;
-			$term_values[] = in_array( $filter_key, $like_filters, true )
-				? '%' . $wpdb->esc_like( (string) ( $args[ $filter_key ] ?? '' ) ) . '%'
-				: (string) ( $args[ $filter_key ] ?? '' );
+		if ( isset( $args['ID'] ) ) {
+			$ids          = is_array( $args['ID'] ) ? $args['ID'] : array( $args['ID'] );
+			$ids          = array_map( 'intval', $ids );
+			$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+			$where[]      = "ID IN ($placeholders)";
+			$params       = array_merge( $params, $ids );
 		}
 
-		$by_dates      = ( isset( $args['start_date'] ) && isset( $args['end_date'] ) ) ? 1 : 0;
-		$enabled      += $by_dates;
-		$term_values[] = $by_dates;
-		$term_values[] = (string) ( $args['start_date'] ?? '' );
-		$term_values[] = (string) ( $args['end_date'] ?? '' );
+        if ( isset( $args['exclude_ids'] ) ) {
+            $ids          = is_array( $args['exclude_ids'] ) ? $args['exclude_ids'] : array( $args['exclude_ids'] );
+            $ids          = array_map( 'intval', $ids );
+            $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+            $where[]      = "ID NOT IN ($placeholders)";
+            $params       = array_merge( $params, $ids );
+        }
 
-		$required      = ( 'OR' === strtoupper( trim( $args['condition'] ?? 'AND' ) ) ) ? min( 1, $enabled ) : $enabled;
-		$term_values[] = $required;
+		if ( isset( $args['status'] ) ) {
+			$where[]  = 'status = %s';
+			$params[] = $args['status'];
+		}
+
+		if ( isset( $args['name'] ) ) {
+			$where[]  = 'name LIKE %s';
+			$params[] = '%' . $wpdb->esc_like( $args['name'] ) . '%';
+		}
+
+		if ( isset( $args['slug'] ) ) {
+			$where[]  = 'slug = %s';
+			$params[] = $args['slug'];
+		}
+
+		if ( isset( $args['searchField'] ) ) {
+			$where[]  = '(name LIKE %s)';
+			$params[] = '%' . $wpdb->esc_like( $args['searchField'] ) . '%';
+		}
+
+		if ( isset( $args['start_date'] ) && isset( $args['end_date'] ) ) {
+			$where[]  = 'create_time BETWEEN %s AND %s';
+			$params[] = $args['start_date'];
+			$params[] = $args['end_date'];
+		}
+
+		$table = $wpdb->prefix . Utill::TABLES['store'];
 
 		if ( isset( $args['count'] ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$results = $wpdb->get_var(
-				$wpdb->prepare(
-					'SELECT COUNT(*) FROM %i
-					WHERE (
-						IF( %d = 1 AND ID IN (' . esc_sql( implode( ',', $include_ids ) ) . '), 1, 0 )
-						+ IF( %d = 1 AND ID NOT IN (' . esc_sql( implode( ',', $exclude_ids ) ) . '), 1, 0 )
-						+ IF( %d = 1 AND status = %s, 1, 0 )
-						+ IF( %d = 1 AND name LIKE %s, 1, 0 )
-						+ IF( %d = 1 AND slug = %s, 1, 0 )
-						+ IF( %d = 1 AND name LIKE %s, 1, 0 )
-						+ IF( %d = 1 AND create_time BETWEEN %s AND %s, 1, 0 )
-					) >= %d',
-					$table,
-					...$term_values
-				)
-			);
+			$query = 'SELECT COUNT(*) FROM %i';
 		} else {
-			$allowed_columns = array( 'ID', 'name', 'status', 'slug', 'create_time' );
-			$order_by        = ( ! empty( $args['order_by'] ) && in_array( $args['order_by'], $allowed_columns, true ) ) ? $args['order_by'] : 'ID';
-			$sort_desc       = ( isset( $args['order'] ) && strtolower( $args['order'] ) === 'desc' ) ? 1 : 0;
-			$has_limit       = isset( $args['limit'] ) && isset( $args['offset'] );
-			$limit           = $has_limit ? intval( $args['limit'] ) : PHP_INT_MAX;
-			$offset          = $has_limit ? intval( $args['offset'] ) : 0;
+			$query = 'SELECT * FROM %i';
+		}
 
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$results = $wpdb->get_results(
-				$wpdb->prepare(
-					'SELECT * FROM %i
-					WHERE (
-						IF( %d = 1 AND ID IN (' . esc_sql( implode( ',', $include_ids ) ) . '), 1, 0 )
-						+ IF( %d = 1 AND ID NOT IN (' . esc_sql( implode( ',', $exclude_ids ) ) . '), 1, 0 )
-						+ IF( %d = 1 AND status = %s, 1, 0 )
-						+ IF( %d = 1 AND name LIKE %s, 1, 0 )
-						+ IF( %d = 1 AND slug = %s, 1, 0 )
-						+ IF( %d = 1 AND name LIKE %s, 1, 0 )
-						+ IF( %d = 1 AND create_time BETWEEN %s AND %s, 1, 0 )
-					) >= %d
-					ORDER BY CASE WHEN %d = 1 THEN %i END DESC, %i ASC
-					LIMIT %d OFFSET %d',
-					$table,
-					...array_merge( $term_values, array( $sort_desc, $order_by, $order_by, $limit, $offset ) )
-				),
-				ARRAY_A
-			);
+		array_unshift( $params, $table );
+
+		if ( ! empty( $where ) ) {
+			$condition = $args['condition'] ?? ' AND ';
+			$query    .= ' WHERE ' . implode( $condition, $where );
+		}
+
+		// ADD SORTING SUPPORT HERE.
+		if ( ! empty( $args['order_by'] ) ) {
+			// Only allow safe columns to sort by (avoid SQL injection).
+			$allowed_columns = array( 'ID', 'name', 'status', 'slug', 'create_time' );
+			$order_by        = in_array( $args['order_by'], $allowed_columns, true ) ? $args['order_by'] : 'ID';
+			$order           = ( isset( $args['order'] ) && strtolower( $args['order'] ) === 'desc' ) ? 'DESC' : 'ASC';
+			$query          .= " ORDER BY {$order_by} {$order}";
+		}
+
+		// Keep your pagination logic.
+		if ( isset( $args['limit'] ) && isset( $args['offset'] ) && empty( $args['count'] ) ) {
+			$limit  = intval( $args['limit'] );
+			$offset = intval( $args['offset'] );
+			$query .= " LIMIT $limit OFFSET $offset";
+		}
+
+		$query = $wpdb->prepare( $query, ...$params ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+		if ( isset( $args['count'] ) ) {
+			$results = $wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
+		} else {
+			$results = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
 		}
 
 		/** Centralized error logging (only once) */
