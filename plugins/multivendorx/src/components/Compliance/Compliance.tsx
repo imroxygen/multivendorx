@@ -78,7 +78,10 @@ const Compliance = () => {
 	}, []);
 
 	const { modules } = useModules();
-	const location = new URLSearchParams(useLocation().hash.substring(1));
+	// NavigatorComponent navigates via a raw history.pushState() call, which
+	// react-router's useLocation() never observes - so it must be read here
+	// straight from window.location.hash instead, to avoid a stale value.
+	const location = new URLSearchParams(window.location.hash.substring(1));
 
 	const settingContent = applyFilters(
 		'multivendorx_compliance_tab',
@@ -127,7 +130,7 @@ const Compliance = () => {
 					<ColumnComponent>
 						<ModuleGuardComponent
 							title={__(
-								'Looks like the compliance module isn’t active yet!',
+								`Looks like the compliance module isn't active yet!`,
 								'multivendorx'
 							)}
 							desc={__(
